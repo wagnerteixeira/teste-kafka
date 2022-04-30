@@ -52,7 +52,7 @@ public class ProducerController : ControllerBase
 				Debug = "security"
 			};
 		}
-
+	
 		using (var producer = new ProducerBuilder<Null, string>(config).Build())
 		{
 			try
