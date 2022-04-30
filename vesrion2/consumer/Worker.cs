@@ -26,6 +26,18 @@ public class Worker : BackgroundService
 			GroupId = _appConfig.ConsumerGroup
 		};
 
+		if (_appConfig.UseSsl)
+		{
+			config = new ConsumerConfig(config)
+			{
+				SecurityProtocol = SecurityProtocol.Ssl,
+				SslCaLocation = _appConfig.SslCaLocation,
+				SslCertificateLocation = _appConfig.SslCertificateLocation,
+				SslKeyLocation = _appConfig.SslKeyLocation,
+				Debug = "security"
+			};
+		}
+
 		try
 		{
 			using (var consumerBuilder = new ConsumerBuilder<Ignore, string>(config).Build())
