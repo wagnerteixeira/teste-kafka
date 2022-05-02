@@ -17,7 +17,7 @@ openssl req -new -x509 -keyout fake-ca-1.key \
 	-passin pass:$PASSWORD -passout pass:$PASSWORD
 
 for i in broker control-center metrics schema-registry rest-proxy connect client; do
-	echo ${i}
+	echo "🧳 Creating ${i} certificates"
 	# Create keystores
 	keytool -genkey -noprompt \
 		-alias ${i} \
@@ -42,12 +42,12 @@ for i in broker control-center metrics schema-registry rest-proxy connect client
 
 	openssl x509 -req -CA fake-ca-1.crt -CAkey fake-ca-1.key -in $i.csr -out $i-ca1-signed.crt -days 9999 -CAcreateserial -passin pass:$PASSWORD
 
-	keytool -keystore kafka.$i.keystore.jks -alias CARoot -import -file fake-ca-1.crt -storepass $PASSWORD -keypass $PASSWORD
+	keytool -keystore kafka.$i.keystore.jks -alias CARoot -import -file fake-ca-1.crt -storepass $PASSWORD -keypass $PASSWORD -noprompt
 
 	keytool -keystore kafka.$i.keystore.jks -alias $i -import -file $i-ca1-signed.crt -storepass $PASSWORD -keypass $PASSWORD
 
 	# Create truststore and import the CA cert.
-	keytool -keystore kafka.$i.truststore.jks -alias CARoot -import -file fake-ca-1.crt -storepass $PASSWORD -keypass $PASSWORD
+	keytool -keystore kafka.$i.truststore.jks -alias CARoot -import -file fake-ca-1.crt -storepass $PASSWORD -keypass $PASSWORD -noprompt
 
 	echo $PASSWORD >${i}_sslkey_creds
 	echo $PASSWORD >${i}_keystore_creds

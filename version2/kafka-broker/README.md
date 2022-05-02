@@ -33,6 +33,7 @@ This project sets up a local Kafka cluster with Zookeeper, .Net Core Api Produce
 ### Accessing the services
 
 1. Broker is available at `localhost:19092`
+2. To access .Net core Api, [http://localhost:8080/swagger](http://localhost:8080/swagger)
 
 ### Running Kafka Tools
 

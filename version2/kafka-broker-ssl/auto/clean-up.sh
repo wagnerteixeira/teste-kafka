@@ -13,12 +13,14 @@ docker volume rm kafka-data > /dev/null
 
 echo "💣  Deleting created secrets."
 
-rm -rf ./secrets/*.*
+set +f
+rm ./secrets/*
+set -f
 
 echo "💣  Deleting created docker images."
 
 docker rmi producer_dotnet:1.0.0
-docker rmi producer_dotnet:1.0.0
+docker rmi consumer_dotnet:1.0.0
 
 echo "✅  All done."
 
