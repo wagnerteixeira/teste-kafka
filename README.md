@@ -8,4 +8,4 @@
 - [Broker with ssl auth](./kafka-broker-ssl)
 - [Broker with ssl auth and kafka connect](./kafka-broker-ssl-with-connect)
 
-## All tests have scripts to easily climb the environment, check the README of each test for more information.
+## All tests have scripts to up the environment, check the README of each test for more information.
