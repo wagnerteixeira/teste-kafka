@@ -2,7 +2,7 @@
 version: "3"
 services:
   zookeeper:
-    image: confluentinc/cp-zookeeper:6.2.4
+    image: confluentinc/cp-zookeeper:${KAFKA_VERSION}
     container_name: zookeeper
     networks:
        kafka:
@@ -25,7 +25,7 @@ services:
       start_period: 5s
     
   broker-1:
-    image: confluentinc/cp-enterprise-kafka:6.2.4
+    image: confluentinc/cp-enterprise-kafka:${KAFKA_VERSION}
     container_name: broker-1
     networks:
        kafka:
@@ -69,6 +69,7 @@ services:
       CONFLUENT_SUPPORT_CUSTOMER_ID: anonymous
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_NUM_PARTITIONS: 3
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
     volumes:
       - kafka-data-1:/var/lib/kafka/data
       - ./secrets:/etc/kafka/secrets
@@ -81,7 +82,7 @@ services:
       start_period: 25s
   
   broker-2:
-    image: confluentinc/cp-enterprise-kafka:6.2.4
+    image: confluentinc/cp-enterprise-kafka:${KAFKA_VERSION}
     container_name: broker-2
     networks:
        kafka:
@@ -125,6 +126,7 @@ services:
       CONFLUENT_SUPPORT_CUSTOMER_ID: anonymous
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_NUM_PARTITIONS: 3
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
     volumes:
       - kafka-data-2:/var/lib/kafka/data
       - ./secrets:/etc/kafka/secrets
@@ -137,7 +139,7 @@ services:
       start_period: 25s
 
   broker-3:
-    image: confluentinc/cp-enterprise-kafka:6.2.4
+    image: confluentinc/cp-enterprise-kafka:${KAFKA_VERSION}
     container_name: broker-3
     networks:
        kafka:
@@ -181,6 +183,7 @@ services:
       CONFLUENT_SUPPORT_CUSTOMER_ID: anonymous
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_NUM_PARTITIONS: 3
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
 
     volumes:
       - kafka-data-3:/var/lib/kafka/data
@@ -194,7 +197,7 @@ services:
       start_period: 25s
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:6.2.4
+    image: confluentinc/cp-schema-registry:${KAFKA_VERSION}
     depends_on:
       zookeeper:
         condition: service_healthy
@@ -238,13 +241,15 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
-      start_period: 15s
+      start_period: 25s
 
   connect:
     image: local-connect-1.7.0:1.0.0
     build:
       context: .
       dockerfile: Dockerfile-KafkaConnect
+      args:
+        KAFKA_VERSION: ${KAFKA_VERSION}
     container_name: connect
     networks:
         kafka:
@@ -277,7 +282,7 @@ services:
       CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
       CONNECT_ZOOKEEPER_CONNECT: zookeeper.local:22181
       CONNECT_PLUGIN_PATH: "/usr/share/java,/usr/share/confluent-hub-components"
-      CONNECT_AUTO_CREATE_TOPICS_ENABLE: "true"
+      CONNECT_AUTO_CREATE_TOPICS_ENABLE: "false"
       CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
       CONNECT_SECURITY_PROTOCOL: SSL
@@ -308,7 +313,7 @@ services:
       start_period: 35s
 
   control-center:
-    image: confluentinc/cp-enterprise-control-center:6.2.4
+    image: confluentinc/cp-enterprise-control-center:${KAFKA_VERSION}
     container_name: control-center
     networks:
         kafka:
@@ -365,10 +370,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 50s
 
   rest-proxy:
-    image: confluentinc/cp-kafka-rest:6.2.4
+    image: confluentinc/cp-kafka-rest:${KAFKA_VERSION}
     depends_on:
       zookeeper:
         condition: service_healthy
@@ -413,7 +418,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 20s
 
   producer:
     image: producer_dotnet:1.0.0
