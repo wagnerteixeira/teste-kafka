@@ -16,7 +16,7 @@ openssl req -new -x509 -keyout fake-ca-1.key \
 	-subj "/CN=ca1.${TLD}/OU=CIA/O=REA/L=Melbourne/S=VIC/C=AU" \
 	-passin pass:$PASSWORD -passout pass:$PASSWORD
 
-for i in broker control-center metrics schema-registry rest-proxy connect client; do
+for i in broker-1 broker-2 broker-3 control-center metrics schema-registry rest-proxy connect client; do
 	echo "🧳 Creating ${i} certificates"
 	# Create keystores
 	keytool -genkey -noprompt \

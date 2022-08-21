@@ -9,7 +9,9 @@ echo "💣  Deleting volumes for a clean slate."
 
 docker volume rm zk-data > /dev/null
 docker volume rm zk-txn-logs > /dev/null
-docker volume rm kafka-data > /dev/null
+docker volume rm kafka-data-1 > /dev/null
+docker volume rm kafka-data-2 > /dev/null
+docker volume rm kafka-data-3 > /dev/null
 
 echo "💣  Deleting created secrets."
 
