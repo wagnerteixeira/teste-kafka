@@ -6,24 +6,88 @@ services:
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: nc -z localhost 2181 || exit -1
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
 
-  broker:
+  broker-1:
     image: confluentinc/cp-kafka:7.0.1
-    container_name: broker
+    container_name: broker1
     ports:
     # To learn about configuring Kafka for access across networks see
     # https://www.confluent.io/blog/kafka-client-cannot-connect-to-broker-on-aws-on-docker-etc/
       - "19092:19092"
     depends_on:
-      - zookeeper
+      zookeeper:
+        condition: service_healthy
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:19092,PLAINTEXT_INTERNAL://broker:29092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:19092,PLAINTEXT_INTERNAL://broker1:29092
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      #KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      #KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      #KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: nc -z localhost 29092 || exit -1
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+  broker-2:
+    image: confluentinc/cp-kafka:7.0.1
+    container_name: broker2
+    ports:
+    # To learn about configuring Kafka for access across networks see
+    # https://www.confluent.io/blog/kafka-client-cannot-connect-to-broker-on-aws-on-docker-etc/
+      - "19093:19093"
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:19093,PLAINTEXT_INTERNAL://broker2:29093
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+    healthcheck:
+      test: nc -z localhost 29093 || exit -1
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+  broker-3:
+    image: confluentinc/cp-kafka:7.0.1
+    container_name: broker3
+    ports:
+    # To learn about configuring Kafka for access across networks see
+    # https://www.confluent.io/blog/kafka-client-cannot-connect-to-broker-on-aws-on-docker-etc/
+      - "19094:19094"
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:19094,PLAINTEXT_INTERNAL://broker3:29094
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+    healthcheck:
+      test: nc -z localhost 29094 || exit -1
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
   producer:
     image: producer_dotnet:1.0.0
     container_name: producer
@@ -32,14 +96,43 @@ services:
     ports:
       - 8080:80
     environment:
-      AppConfig__Server: broker:29092
+      AppConfig__Server: "broker1:29092,broker2:29093,broker3:29094"
       AppConfig__Topic: UserEmail
+    depends_on:
+      broker-1:
+        condition: service_healthy
+      broker-2:
+        condition: service_healthy
+      broker-3:
+        condition: service_healthy
+    healthcheck:
+      test: curl -f http://localhost:80/health-check || exit -1
+      interval: 10s
+      timeout: 2s
+      retries: 3
+      start_period: 1s
   consumer:
     image: consumer_dotnet:1.0.0
     container_name: consumer
     build:
       context: ../consumer
     environment:
-      AppConfig__Server: broker:29092
+      AppConfig__Server: "broker1:29092,broker2:29093,broker3:29094"
       AppConfig__Topic: UserEmail
       AppConfig__ConsumerGroup: group-1
+      AppConfig__HealthCheckTcpPort: 5000
+    depends_on:
+      broker-1:
+        condition: service_healthy
+      broker-2:
+        condition: service_healthy
+      broker-3:
+        condition: service_healthy
+      producer:
+        condition: service_healthy
+    healthcheck:
+      test: nc -z localhost 5000 || exit -1
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s

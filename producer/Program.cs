@@ -13,6 +13,10 @@ builder.Services.Configure<AppConfig>(builder.Configuration.GetSection("AppConfi
 
 var app = builder.Build();
 
+app
+    .MapGet("/health-check", () => Results.Ok(new { Health = true }))
+    .WithName("Health Check");
+
 app.UseSwagger();
 app.UseSwaggerUI();
 

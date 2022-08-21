@@ -13,6 +13,7 @@ FROM build AS publish
 RUN dotnet publish "consumer.csproj" -c Release -o /app/publish
 
 FROM base AS final
+RUN apt-get update && apt-get install netcat -y
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "consumer.dll"]

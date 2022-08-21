@@ -8,4 +8,5 @@ public record AppConfig
 	public string SslCaLocation { get; set; }
 	public string SslCertificateLocation { get; set; }
 	public string SslKeyLocation { get; set; }
+	public int? HealthCheckTcpPort { get; set; }
 }

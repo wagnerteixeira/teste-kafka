@@ -14,6 +14,7 @@ FROM build AS publish
 RUN dotnet publish "producer.csproj" -c Release -o /app/publish
 
 FROM base AS final
+RUN apt-get update && apt-get install curl -y
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "producer.dll"]
